@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from comments.forms import CommentForm
 from .models import Post,Category
 from django.views.generic import ListView,DetailView
-
+from django.core.paginator import Paginator
 
 
 
@@ -15,6 +15,125 @@ class IndexView(ListView):
 	model = Post
 	template_name = 'blog/index.html'
 	context_object_name = 'post_list'
+
+	#开启分页功能
+	paginate_by = 2
+
+	def get_context_data(self,**kwargs):
+		#获取父类生成的传递给模版的字典
+		context = super().get_context_data(**kwargs)	
+		
+		#从父类的字典中获取paginator、page_obj、is_paginated
+		#paginator：Paginator的一个实例
+		#page_obj:Page的实例
+		#is_paginated:指示是否已经分页
+		paginator = context.get('paginator')
+		page = context.get('page_obj')
+		is_paginated = context.get('is_paginated')
+
+		#调用自己实现的pagination_data获取显示分页的内容
+		pagination_data = self.pagination_data(paginator,page,is_paginated)
+
+		#将分页导航条的模板变量更新到context中
+		context.update(pagination_data)
+
+		#返回更新后的context
+		return context
+
+	def pagination_data(self,paginator,page,is_paginated):
+		if not is_paginated:
+			#若无分页，则无需显示分页导航条
+			return {}
+
+		#当前页左边连续的页码号，初值为空
+		left = []
+
+		#当前页右边连续的页码号，初值为空
+		right = []
+
+		#标识第一页页码后面是否需要省略号
+		left_has_more = False
+
+		#标识最后一页前是否需要省略号
+		right_has_more = False
+    	
+    	#标识是否需要显示第一页
+		first = False
+
+		#标识是否需要显示最后一页
+		last = False
+
+		#获得用户当前请求的页码号
+		page_number = page.number
+
+		#获得分页后的总页数
+		total_pages = paginator.num_pages
+
+		#获得整个分页页码列表，如[1,2,3,4,5]
+		page_range = paginator.page_range
+
+		if page_number == 1:
+			#获取当前页右边的连续页码号
+			right = page_range[page_number:page_number+1]
+			#如果最右边的页码比倒数第二页小，则需显示省略号
+			if right[-1] < total_pages -1:
+				right_has_more = True
+			
+			#若最右边页码比最后一页还小，则显示最后一页页码
+			if right[-1] < total_pages:
+				last = True
+		elif page_number == total_pages:
+			#如果用户请求最后一页,
+			if (page_number - 3) > 0:
+				left = page_range[page_number - 3:page_number -1]
+			else:
+				left = 0
+
+			if left[0] > 2:
+				left_has_more = True
+
+			if left[0] > 1:
+				first = True
+		else:
+			left = page_range[(page_number - 3) if (page_number - 3) > 0 else 0:page_number - 1]
+			right = page_number[page_number:page_number + 2]
+
+			if right[-1] < total_pages - 1:
+				right_has_more = True
+			if right[-1] < total_pages:
+				last = True
+
+			if left[0] > 2:
+				left_has_more = True
+
+			if left[0] > 1:
+				first = True
+		data = {
+		'left':left,
+		'right':right,
+		'left_has_more':left_has_more,
+		'right_has_more':right_has_more,
+		'first':first,
+		'last':last,
+
+		}
+
+		return data
+
+
+
+
+
+
+					
+
+
+
+
+
+
+
+
 '''
 def index(request):
 	post_list = Post.objects.all().order_by('-create_time')
