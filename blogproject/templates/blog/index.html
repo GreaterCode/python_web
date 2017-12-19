@@ -28,31 +28,33 @@
     {% endfor %}
     
     {% if is_paginated %}
-    <div class="pagination">
-      {% if first %}
-        <a href="?page=1">1</a>
-      {% endif %}
-      {% if left %}
-        {% if left_has_more %}
-            <span>...</span>
-        {% endif %}
-        {% for i in left %}
-            <a href="?page={{ i }}">{{ i }}</a>
-        {% endfor %}
-      {% endif %}
-      <a href="?page={{ page_obj.number }}" style="color: red">{{ page_obj.number }}</a>
-      {% if right %}
-        {% for i in right %}
-            <a href="?page={{ i }}">{{ i }}</a>
-        {% endfor %}
-        {% if right_has_more %}
-            <span>...</span>
-        {% endif %}
-      {% endif %}
-      {% if last %}
-        <a href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
-      {% endif %}
-    </div>
+        <div class="pagination">
+            <ul>
+                {% if first %}
+                    <li><a href="?page=1">1</a></li>
+                {% endif %}
+                {% if left %}
+                    {% if left_has_more %}
+                        <li><span>...</span></li>
+                    {% endif %}
+                    {% for i in left %}
+                        <li><a href="?page={{ i }}">{{ i }}</a></li>
+                    {% endfor %}
+                {% endif %}
+                <li class="current"><a href="?page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
+                {% if right %}
+                    {% for i in right %}
+                        <li><a href="?page={{ i }}">{{ i }}</a></li>
+                    {% endfor %}
+                    {% if right_has_more %}
+                        <li><span>...</span></li>
+                    {% endif %}
+                {% endif %}
+                {% if last %}
+                    <li><a href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a></li>
+                {% endif %}
+            </ul>
+        </div>
     {% endif %}
 
     <!--[if !IE]>
